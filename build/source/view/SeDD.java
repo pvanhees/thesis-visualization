@@ -521,7 +521,7 @@ public class SeDD extends PApplet {
 				_SANKEY_POS = round(map(tip_x, _SANKEY_SLIDER_RECT.x, _SANKEY_SLIDER_RECT.x+_SANKEY_SLIDER_RECT.width- _SANKEY_SLIDER_BAR.width, 0, _SANKEY_WIDTH - _SANKEY_RECT.width));
 				// println("dragging: "+_SANKEY_POS);
 				for(SeDDModel s:samples){
-					updatePGraphics(s);
+					s.updatePGraphics(_SANKEY_RECT, _SANKEY_POS);
 				}
 				draw_counter = 0;
 				loop();
@@ -930,7 +930,7 @@ private boolean check_conf_file(File f){
 		//load data
 		for(int i = 0; i<samples.length; i++){
 			status_msg = "loading "+sample_names[i]+" aligned sequences";
-			samples[i] = new SeDDModel(new SequencingSample(file_urls[i], sample_names[i], this));
+			samples[i] = new SeDDModel(new SequencingSample(file_urls[i], sample_names[i], this), this);
 		}
 		// samples[0] = new Sample("panel-a.txt", "all");
 		// samples[0] = new Sample("panel-b.txt", "gram_negative");
@@ -1327,45 +1327,12 @@ private boolean check_conf_file(File f){
 			//assgin edge position
 			sample.assignEdgePositions(layout_y_map, layout_x, _half_node_w, _node_h, isExponentialScaling, base);
 			// sample.createColorPG(color_cyan, 160);
-			createPGraphics(sample, sample_colors[i], color_alpha);
+			sample.createPGraphics(sample_colors[i], color_alpha, _SANKEY_RECT, _SANKEY_POS, _SANKEY_WIDTH, _SANKEY_HEIGHT, _frequencyThreshold, _half_node_w, _node_w);
+			
 
 			println("debug: end of updateEdges():"+sample.getSequencingSample().getName());
 		}
 		println("debug: end of updateEdges()");
-	}
-
-
-	//draw edges
-	private void createPGraphics(SeDDModel s, int c, int alpha){
-		s.setFlow_pg(createGraphics(_SANKEY_RECT.x+_SANKEY_WIDTH, _SANKEY_RECT.y+_SANKEY_HEIGHT));
-		s.getFlow_pg().beginDraw();
-		// flow_pg.background(255);
-		s.getFlow_pg().fill(c);
-		s.getFlow_pg().noStroke();
-		for(int i = 0; i< s.getDimensions().length-1; i++){
-			Position d = s.getDimensions()[i];
-			//draw edges
-			for(Edge e :d.getEdges()){
-				// println((i+1)+"-"+(i+2)+":"+e.toString());
-				if(e.getSequences().size() > 0 && e.getFrequency() >= _frequencyThreshold){
-					s.getFlow_pg().fill(c, alpha);
-					s.getFlow_pg().noStroke();
-					if(i == 0){
-						e.setPath(drawSankey2(s.getFlow_pg(), e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _node_w, _half_node_w));
-					}else if( i == s.getDimensions().length-2){
-						e.setPath(drawSankey2(s.getFlow_pg(), e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _node_w));
-					}else{
-						e.setPath(drawSankey2(s.getFlow_pg(), e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _half_node_w));
-					}
-				}
-			}
-		}
-		s.getFlow_pg().endDraw();
-		//embedding
-		s.setDisplay_pg(createGraphics(_SANKEY_RECT.width, _SANKEY_RECT.height));
-		s.getDisplay_pg().beginDraw();
-		s.getDisplay_pg().image(s.getFlow_pg(), -1*_SANKEY_RECT.x-_SANKEY_POS, -1* _SANKEY_RECT.y);
-		s.getDisplay_pg().endDraw();
 	}
 
 	//sankey slider
@@ -1452,7 +1419,7 @@ private boolean check_conf_file(File f){
 					if(seq.size() > 0){
 						//draw sequences
 //						samples[i].drawSelectedSequence(seq, sample_colors[i]);
-						drawSelectedSequence(samples[i], seq, sample_colors[i]);
+						samples[i].drawSelectedSequence(seq, sample_colors[i], _SANKEY_RECT, _node_h, _half_node_w, _node_w);
 					}
 				}
 			}else{
@@ -1489,217 +1456,9 @@ private boolean check_conf_file(File f){
 	
 	
 
-	private void drawSelectedSequence(SeDDModel sample, ArrayList<Sequence> seq, int c){
-		noStroke();
-		fill(c);
-		for(int i = 0; i< sample.getDimensions().length-1; i++){
-			Position d = sample.getDimensions()[i];
-			//draw edges
-			for(Edge e :d.getEdges()){
-				if(e.getTo_dx() < _SANKEY_RECT.x+_SANKEY_RECT.width){
-					//check overlap with seq
-					ArrayList<Sequence> intersection = intersection(seq, e.getSequences());
-					if(intersection.size()>0){
-						float thickness = map(intersection.size(), 0, (float) sample.getSequencingSample().getTotal_count(), 0f, _node_h);
-						// if(isExponentialScaling){
-						// 	thickness = log_map(intersection.size(), 0, (float)total_count, 0f, _node_h, base);
-						// }
 
-						if(i == 0){
-							drawSankey2(g, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, thickness, _node_w, _half_node_w);	
-						}else if( i == sample.getDimensions().length-2){
-							drawSankey2(g, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, thickness, _half_node_w, _node_w);	
-						}else{
-							drawSankey2(g, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, thickness, _half_node_w, _half_node_w);	
-						}		
-					}
-				}
-			}
-		}
-	}
 	
-	private ArrayList<Sequence> intersection(ArrayList<Sequence> list1, ArrayList<Sequence> list2) {
-		ArrayList<Sequence> list = new ArrayList<Sequence>();
-		for (Sequence t : list1) {
-			if(list2.contains(t)) {
-				list.add(t);
-			}
-		}
-		return list;
-	}
 	
-	private GeneralPath drawSankey2(PGraphics pg, float x_f, float y_from, float x_t, float y_to, float min_r_left, float min_r_right, float thickness, float from_offset, float to_offset){
-		GeneralPath trace = new GeneralPath();
-		float x_from = x_f + from_offset;
-		float x_to = x_t - to_offset;
-
-		int isDownSlope = 0; //1 = down slope, 2 = up slope
-		if (y_from < y_to){
-			isDownSlope = 1;
-		}else if(y_from > y_to){
-			isDownSlope = -1;
-		}else{
-			//flat line
-			isDownSlope = -1;
-		}
-		float f1 = min_r_left + thickness / 2 + isDownSlope * (thickness / 2);
-		float f2 = min_r_left + thickness / 2 - isDownSlope * (thickness / 2);
-		float f3 = min_r_right + thickness / 2 - isDownSlope * (thickness / 2);
-		float f4 = min_r_right + thickness / 2 + isDownSlope * (thickness / 2);
-
-		float p1 = x_from;
-		float q1 = y_from + thickness / 2 + isDownSlope * thickness / 2 + isDownSlope * min_r_left;
-		float p2 = x_to;
-		float q2 = y_to + thickness / 2 - isDownSlope * thickness / 2 - isDownSlope * min_r_right;
-		// indentation
-		// int i1 = x_from + thickness / 5;
-		// int i2 = y_from + thickness / 2;
-		// int i3 = x_to + thickness / 5;
-		// int i4 = y_to + thickness / 2;
-
-		float f5 = sq(p2 - p1) + sq(q2 - q1);
-
-		float f6 = sqrt(f5 - sq(f3 + f1));
-		float f7 = ((q2 - q1) * f6 + isDownSlope * (p2 - p1) * (f3 + f1)) / f5;
-		float f8 = ((p2 - p1) * f6 - isDownSlope * (q2 - q1) * (f3 + f1)) / f5;
-		float rx1 = (p1 + isDownSlope * f1 * f7);
-		float ry1 = (q1 - isDownSlope * f1 * f8);
-		float rx2 = (p2 - isDownSlope * f3 * f7);
-		float ry2 = (q2 + isDownSlope * f3 * f8);
-
-		float f9 = sqrt(f5 - sq(f2 + f4));
-		float f10 = ((q2 - q1) * f9 + isDownSlope * (p2 - p1) * (f2 + f4)) / f5;
-		float f11 = ((p2 - p1) * f9 - isDownSlope * (q2 - q1) * (f2 + f4)) / f5;
-
-		float rx3 = (p1 + isDownSlope * f2 * f10);
-		float ry3 = (q1 - isDownSlope * f2 * f11);
-		float rx4 = (p2 - isDownSlope * f4 * f10);
-		float ry4 = (q2 + isDownSlope * f4 * f11);
-
-		float angle = (2.0F * (atan2(ry1 - y_from, rx1 - x_from) % TWO_PI));
-		// pg.fill(0);
-		// pg.noStroke();
-		pg.smooth();
-		pg.beginShape();
-
-		float f12;
-		if (isDownSlope == 1) {
-			pg.vertex(x_f, y_from);
-			pg.vertex(x_from, y_from);
-			trace.moveTo(x_f, y_from);
-			trace.lineTo(x_from, y_from);
-			for (f12 = 0.0F; f12 < angle; f12 += 0.02F) {
-				float dx = p1 + f1 * cos(f12 - isDownSlope * PI / 2.0F);
-				float dy = q1 + f1 * sin(f12 - isDownSlope * PI / 2.0F);
-				pg.curveVertex(dx, dy);
-				trace.lineTo(dx, dy);
-			}
-			pg.vertex(rx1, ry1);
-			pg.vertex(rx2, ry2);
-			trace.lineTo(rx1, ry1);
-			trace.lineTo(rx2, ry2);
-			for (f12 = angle; f12 > 0.0F; f12 -= isDownSlope * 0.02F) {
-				float dx = p2 + f3 * cos(f12 + isDownSlope * PI / 2.0F);
-				float dy = q2 + f3 * sin(f12 + isDownSlope * PI / 2.0F);
-				pg.curveVertex(dx, dy);
-				trace.lineTo(dx, dy);
-			}
-			pg.vertex(x_to, y_to);
-			pg.vertex(x_t, y_to);
-			pg.vertex(x_t, y_to+thickness);	
-			pg.vertex(x_to, y_to + thickness);
-
-			trace.lineTo(x_to, y_to);
-			trace.lineTo(x_t, y_to);
-			trace.lineTo(x_t, y_to+thickness);
-			trace.lineTo(x_to, y_to +thickness);
-			// pg.vertex(i3, i4);
-
-			for (f12 = 0.0F; f12 < angle; f12 += isDownSlope * 0.02F) {
-				float dx = p2 + f4 * cos(f12 + isDownSlope * PI / 2.0F);
-				float dy = q2 + f4 * sin(f12 + isDownSlope * PI / 2.0F);
-				pg.curveVertex(dx, dy);
-				trace.lineTo(dx, dy);
-			}
-			pg.vertex(rx4, ry4);
-			pg.vertex(rx3, ry3);
-			for (f12 = angle; f12 > 0.0F; f12 -= isDownSlope * 0.02F) {
-				float dx = p1 + f2 * cos(f12 - isDownSlope * PI / 2.0F);
-				float dy = q1 + f2 * sin(f12 - isDownSlope * PI / 2.0F);
-				pg.curveVertex(dx, dy);
-				trace.lineTo(dx, dy);
-			}
-			// pg.vertex(i1, i2);
-			pg.vertex(x_from, y_from+thickness);
-			pg.vertex(x_f, y_from+thickness);
-			trace.lineTo(x_from, y_from+thickness);
-			trace.lineTo(x_f, y_from+thickness);
-
-			pg.endShape();
-			trace.closePath();
-		}else {
-			pg.vertex(x_f, y_from);
-			pg.vertex(x_from, y_from);
-			trace.moveTo(x_f, y_from);
-			trace.lineTo(x_from, y_from);
-			for (f12 = PI; f12 > PI + angle; f12 -= 0.02F) {
-				float dx = p1 + f1 * cos(f12 - HALF_PI);
-				float dy = q1 + f1 * sin(f12 - HALF_PI);
-				pg.curveVertex(dx , dy);
-				trace.lineTo(dx, dy);
-			}
-			pg.vertex(rx1, ry1);
-			pg.vertex(rx2, ry2);
-			for (f12 = angle; f12 < 0.0F; f12 += 0.02F) {
-				float dx = p2 + f3 * cos(f12 - HALF_PI);
-				float dy = q2 + f3 * sin(f12 - HALF_PI);
-				pg.curveVertex(dx, dy);
-				trace.lineTo(dx, dy);
-			}
-			pg.vertex(x_to, y_to);
-			pg.vertex(x_t, y_to);
-			// pg.vertex(i3, i4);
-			pg.vertex(x_t, y_to + thickness);
-			pg.vertex(x_to, y_to + thickness);
-
-			trace.lineTo(x_to, y_to);
-			trace.lineTo(x_t, y_to);
-			trace.lineTo(x_t, y_to + thickness);
-			trace.lineTo(x_to, y_to + thickness);
-			for (f12 = 0.0F; f12 > angle; f12 -= 0.02F) {
-				float dx = p2 + f4 * cos(f12 - HALF_PI);
-				float dy = q2 + f4 * sin(f12 - HALF_PI);
-				pg.curveVertex(dx, dy);
-				trace.lineTo(dx, dy);
-			}
-			pg.vertex(rx4, ry4);
-			pg.vertex(rx3, ry3);
-			trace.lineTo(rx4, ry4);
-			trace.lineTo(rx3, ry3);
-			for (f12 = PI + angle; f12 < PI; f12 += 0.02F) {
-				float dx = p1 + f2 * cos(f12 - HALF_PI);
-				float dy = q1 + f2 * sin(f12 - HALF_PI);
-				pg.curveVertex(dx,dy);
-				trace.lineTo(dx, dy);
-			}
-			// pg.vertex(i1, i2);
-			pg.vertex(x_from, y_from+thickness);
-			pg.vertex(x_f, y_from+thickness);
-
-			trace.lineTo(x_from, y_from+thickness);
-			trace.lineTo(x_f, y_from+thickness);
-			pg.endShape();
-			trace.closePath();
-		}
-		return trace;
-	}
-	
-	private void updatePGraphics(SeDDModel s){
-		s.getDisplay_pg().clear();
-		s.getDisplay_pg().beginDraw();
-		s.getDisplay_pg().image(s.getFlow_pg(), -1*_SANKEY_RECT.x-_SANKEY_POS ,-1* _SANKEY_RECT.y);
-		s.getDisplay_pg().endDraw();
-	}
 
 	//pdf drawing
 	private void drawPDF(PGraphics pdf, int e_w, int e_h){
