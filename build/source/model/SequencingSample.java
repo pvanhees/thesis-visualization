@@ -1,7 +1,6 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 
 import processing.core.PApplet;
@@ -12,7 +11,6 @@ public class SequencingSample{
 	private int seq_length;
 	private int total_count;
 
-	private boolean[] positionSelected;
 	private HashSet<String> unique_sequence;
 
 	//constructor and loading data
@@ -37,10 +35,10 @@ public class SequencingSample{
 			sequences.add(s);
 		}
 
-		System.out.println("---- "+name+ "-----");
-		System.out.println("number of non_unique sequence removed = "+non_unique_counter);
-		System.out.println("number of unique sequence = "+unique_sequence.size());
-		System.out.println("sequence length = "+seq_length);
+		PApplet.println("---- "+name+ "-----");
+		PApplet.println("number of non_unique sequence removed = "+non_unique_counter);
+		PApplet.println("number of unique sequence = "+unique_sequence.size());
+		PApplet.println("sequence length = "+seq_length);
 
 		total_count = sequences.size();
 		// println("debgu: "+name+" has "+sequences.size()+" sequences!");
@@ -49,18 +47,6 @@ public class SequencingSample{
 
 	public String getName() {
 		return name;
-	}
-
-	public boolean[] getPositionSelected() {
-		return positionSelected;
-	}
-
-	public void setPositionSelected(boolean[] positionSelected) {
-		this.positionSelected = positionSelected;
-	}
-
-	public void togglePositionSelected(int index){
-		this.positionSelected[index] = !this.positionSelected[index];
 	}
 
 	public int getSeq_length() {

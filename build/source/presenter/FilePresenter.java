@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import model.SequencingSample;
 import processing.core.PApplet;
 import view.FileLoaderViewListener;
-import view.SeDD.Sample;
 
 public class FilePresenter implements IFilePresenter, FileLoaderViewListener {
 	

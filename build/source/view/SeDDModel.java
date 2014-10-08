@@ -26,12 +26,10 @@ public class SeDDModel {
 	private Rectangle toggle = null; //legend
 	
 	private SequencingSample ss;
-	private PApplet pApplet;
 
 	
-	public SeDDModel(SequencingSample ss, PApplet pApplet) {
+	public SeDDModel(SequencingSample ss) {
 		this.ss = ss;
-		this.pApplet = pApplet;
 
 		dimensions = calculateDimensions();
 
@@ -159,7 +157,7 @@ public class SeDDModel {
 	
 	public float log_map(float input, float i_min, float i_max, float o_min, float o_max, float b){
 		float f = (input - i_min)/(i_max-i_min);
-		float flog = pApplet.pow(f, 1f/b);
+		float flog = PApplet.pow(f, 1f/b);
 		return flog*(o_max - o_min);
 	}
 

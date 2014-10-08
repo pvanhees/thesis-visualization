@@ -701,49 +701,49 @@ private boolean check_conf_file(File f){
 		}
 	}
 
-//	private void pngFolderSelection(File selection){
-//		if(selection != null){
-//			//save the image
-//			// String path = selection.getAbsolutePath();
-//			// path+= "/Sedd_"+ timestamp()+".png";
-//			// saveFrame(path);
-//			// println("saving png done");
-//			String path = selection.getAbsolutePath();
-//			path+= "/Sedd_"+ timestamp()+".png";
-//
-//			//determine export image size
-//			int e_img_width = _LEFT_MARGIN + _RIGHT_MARGIN + (_node_w*(_total_length+2)) + (_horizontal_gap*(_total_length-1)) + _LEGEND_RECT.width;
-//			int e_img_height = _SANKEY_HEIGHT + _TOP_MARGIN +_TOP_MARGIN;
-//			println("export image dimensions = "+ e_img_width +"  "+e_img_height);
-//			PGraphics pdf = createGraphics(e_img_width, e_img_height);
-//			pdf.beginDraw();
-//			//draw stuff
-//			drawPDF(pdf, e_img_width, e_img_height);
-//
-//			pdf.dispose();
-//			pdf.endDraw();
-//			pdf.save(path);
-//		}
-//	}
+	private void pngFolderSelection(File selection){
+		if(selection != null){
+			//save the image
+			// String path = selection.getAbsolutePath();
+			// path+= "/Sedd_"+ timestamp()+".png";
+			// saveFrame(path);
+			// println("saving png done");
+			String path = selection.getAbsolutePath();
+			path+= "/Sedd_"+ timestamp()+".png";
 
-//	private void pdfFolderSelection(File selection){
-//		if(selection != null){
-//			String path = selection.getAbsolutePath();
-//			path+= "/Sedd_"+ timestamp()+".pdf";
-//
-//			//determine export image size
-//			int e_img_width = _LEFT_MARGIN + _RIGHT_MARGIN + (_node_w*(_total_length+2)) + (_horizontal_gap*(_total_length-1)) + _LEGEND_RECT.width;
-//			int e_img_height = _SANKEY_HEIGHT + _TOP_MARGIN +_TOP_MARGIN;
-//			println("export image dimensions = "+ e_img_width +"  "+e_img_height);
-//			PGraphics pdf = createGraphics(e_img_width, e_img_height, PDF, path);
-//			pdf.beginDraw();
-//			//draw stuff
-//			drawPDF(pdf, e_img_width, e_img_height);
-//
-//			pdf.dispose();
-//			pdf.endDraw();
-//		}
-//	}
+			//determine export image size
+			int e_img_width = _LEFT_MARGIN + _RIGHT_MARGIN + (_node_w*(_total_length+2)) + (_horizontal_gap*(_total_length-1)) + _LEGEND_RECT.width;
+			int e_img_height = _SANKEY_HEIGHT + _TOP_MARGIN +_TOP_MARGIN;
+			println("export image dimensions = "+ e_img_width +"  "+e_img_height);
+			PGraphics pdf = createGraphics(e_img_width, e_img_height);
+			pdf.beginDraw();
+			//draw stuff
+			drawPDF(pdf, e_img_width, e_img_height);
+
+			pdf.dispose();
+			pdf.endDraw();
+			pdf.save(path);
+		}
+	}
+
+	private void pdfFolderSelection(File selection){
+		if(selection != null){
+			String path = selection.getAbsolutePath();
+			path+= "/Sedd_"+ timestamp()+".pdf";
+
+			//determine export image size
+			int e_img_width = _LEFT_MARGIN + _RIGHT_MARGIN + (_node_w*(_total_length+2)) + (_horizontal_gap*(_total_length-1)) + _LEGEND_RECT.width;
+			int e_img_height = _SANKEY_HEIGHT + _TOP_MARGIN +_TOP_MARGIN;
+			println("export image dimensions = "+ e_img_width +"  "+e_img_height);
+			PGraphics pdf = createGraphics(e_img_width, e_img_height, PDF, path);
+			pdf.beginDraw();
+			//draw stuff
+			drawPDF(pdf, e_img_width, e_img_height);
+
+			pdf.dispose();
+			pdf.endDraw();
+		}
+	}
 
 	private int title_x, title_y;
 	private PFont title_font;
@@ -930,7 +930,7 @@ private boolean check_conf_file(File f){
 		//load data
 		for(int i = 0; i<samples.length; i++){
 			status_msg = "loading "+sample_names[i]+" aligned sequences";
-			samples[i] = new SeDDModel(new SequencingSample(file_urls[i], sample_names[i], this), this);
+			samples[i] = new SeDDModel(new SequencingSample(file_urls[i], sample_names[i], this));
 		}
 		// samples[0] = new Sample("panel-a.txt", "all");
 		// samples[0] = new Sample("panel-b.txt", "gram_negative");
@@ -2192,514 +2192,6 @@ private boolean check_conf_file(File f){
 		}
 	}
 	
-	
-	
-//	private class Sample{
-//			private String name;
-//			private ArrayList<Sequence> sequences;
-//			private int seq_length;
-//			private int total_count;
-//			private Position[] dimensions;//0 to n-1
-//
-//
-//
-//			private PGraphics flow_pg;
-//			private PGraphics getFlow_pg() {
-//				return flow_pg;
-//			}
-//
-//
-//			private PGraphics display_pg; //test
-//
-//			private PGraphics getDisplay_pg() {
-//				return display_pg;
-//			}
-//
-//
-//
-//			//flags
-//			private boolean isShowing = true;
-//
-//			private boolean[] positionSelected;
-//			private HashSet<String> unique_sequence;
-//
-//
-//			//buttons
-//			private Rectangle toggle = null; //legend
-//
-//
-//
-//			//constructor and loading data
-//			private Sample(String url, String name){
-//				// println("Sample.contstructor: url ="+url+"  name="+name);
-//				this.name = name;
-//				sequences = new ArrayList<Sequence>();
-//				unique_sequence = new HashSet<String>();
-//				int non_unique_counter = 0;
-//				//load data
-//				String[] lines = loadStrings(url);
-//				seq_length = lines[0].length();
-//
-//				//Sequence
-//				//no sequence id 
-//				for(int i = 0; i<lines.length; i++){
-//					String line = lines[i].trim();
-//					// println("\t"+line);
-//					unique_sequence.add(line);
-//					char[] array = line.toCharArray();
-//					Sequence s = new Sequence(""+i, array);
-//					sequences.add(s);
-//				}
-//
-//				System.out.println("---- "+name+ "-----");
-//				System.out.println("number of non_unique sequence removed = "+non_unique_counter);
-//				System.out.println("number of unique sequence = "+unique_sequence.size());
-//				System.out.println("sequence length = "+seq_length);
-//				//dimensions
-//				dimensions = new Position[seq_length];
-//				for(int i = 0; i<seq_length; i++){
-//					Position d = new Position(i);
-//					//nodes
-//					for(int j = 0; j < sequences.size(); j++){
-//						Sequence s = sequences.get(j);
-//						String aa = ""+s.getSequence()[i];
-//						Node node  = (Node) d.getNode_map().get(aa);
-//						if(node == null){
-//							node = new Node(d, aa.charAt(0));
-//							d.getNode_map().put(aa, node);
-//							d.getNodes().add(node);
-//						}	
-//						node.addSequence(s);
-//					}
-//					dimensions[i] = d;
-//				}
-//
-//
-//				//edges
-//				for(int j = 0; j < sequences.size(); j++){
-//					Sequence s = sequences.get(j);
-//					for(int k = 0; k <s.getSequence().length-1; k++){
-//						String aa_from = ""+ s.getSequence()[k];
-//						String aa_to = ""+s.getSequence()[k+1];
-//						Position d_from = dimensions[k];
-//						Position d_to = dimensions[k+1];
-//						Node node_from = (Node)d_from.getNode_map().get(aa_from);
-//						Node node_to = (Node)d_to.getNode_map().get(aa_to);
-//
-//						String aa_edge = aa_from+"_"+aa_to;
-//						//find edge
-//						Edge edge = (Edge) d_from.getEdge_map().get(aa_edge);
-//						if(edge == null){
-//							edge = new Edge(node_from, node_to, aa_edge);
-//							d_from.getEdge_map().put(aa_edge, edge);
-//							d_from.getEdges().add(edge);
-//						}
-//						edge.addSequence(s);
-//					}
-//				}
-//
-//
-//				total_count = sequences.size();
-//				// println("debgu: "+name+" has "+sequences.size()+" sequences!");
-//				System.out.println("debug:"+name+"'s data is loaded ---- ");
-//			}
-//
-//			//calculate frequency for node and edge
-//			private void calculateFrequency(){
-//				//per node
-//				for(Position d : dimensions){
-//					for(Node n : d.getNodes()){
-//						n.setFrequency((float)n.getSequences().size()/(float)total_count);
-//					}
-//					for(Edge e: d.getEdges()){
-//						e.setFrequency((float)e.getSequences().size()/(float)total_count);
-//					}
-//				}
-//			}
-//
-//
-//			//sort edges and assign positions
-//			private void assignEdgePositions(){
-//				//assign y position for each node
-//				System.out.println("assignEdgePositions():"+name);
-//				//assigning y position per dimension, per node
-//				for(Position d : dimensions){
-//					for(Node n : d.getNodes()){
-//						Float f = (Float)layout_y_map.get(""+n.getAminoAcid());
-//						if(f == null){
-//							System.out.println("Float is null: "+n.getAminoAcid());
-//
-//						}
-//						n.setDy(getFloat(f));
-//						n.setRunningY(n.getDy());
-//					}
-//				}
-//				//sort Edges based on y_gap
-//				for(Position d : dimensions){
-//					ArrayList<Edge> edges = d.getEdges();
-//					//sort by the from_node position
-//					//sort by the gap
-//					Collections.sort(edges);
-//				}
-//				//assign position for edges
-//				for(int i = 0; i< dimensions.length-1; i++){
-//					Position d = dimensions[i];
-//					float from_x = layout_x[i];
-//					float to_x = layout_x[i+1];
-//					float from_mid_x = from_x + _half_node_w;
-//					float to_mid_x = to_x + _half_node_w;
-//
-//					//go through sorted edges
-//					ArrayList<Edge> edges = d.getEdges();
-//					for(int j = 0; j<edges.size(); j++){
-//						Edge e = edges.get(j);
-//						//filter  ----------------------------------------------- to be implemented
-//						float thickness = map(e.getFrequency(), 0f, 1f, 0f, _node_h);
-//
-//						if(isExponentialScaling){
-//							thickness = log_map(e.getFrequency(), 0f, 1f, 0f, _node_h, base);
-//						}
-//
-//						e.setFrom_dx(from_mid_x);
-//						e.setFrom_dy(e.getFrom().getFrom_runningY());
-//						e.setTo_dx(to_mid_x);
-//						e.setTo_dy(e.getTo().getTo_runningY());
-//						e.setThickness(thickness);
-//						//increment
-//						e.getFrom().setFrom_runningY(e.getFrom().getFrom_runningY() + thickness);
-//						e.getTo().setTo_runningY(e.getTo().getTo_runningY() + thickness);
-//					}
-//				}
-//				// println("edge positions assigned!"+name);
-//			}
-//
-//
-//			//draw edges
-//			private void createPGraphics(int c, int alpha){
-//				flow_pg = createGraphics(_SANKEY_RECT.x+_SANKEY_WIDTH, _SANKEY_RECT.y+_SANKEY_HEIGHT);
-//				flow_pg.beginDraw();
-//				// flow_pg.background(255);
-//				flow_pg.fill(c);
-//				flow_pg.noStroke();
-//				for(int i = 0; i< dimensions.length-1; i++){
-//					Position d = dimensions[i];
-//					//draw edges
-//					for(Edge e :d.getEdges()){
-//						// println((i+1)+"-"+(i+2)+":"+e.toString());
-//						if(e.getSequences().size() > 0 && e.getFrequency() >= _frequencyThreshold){
-//							flow_pg.fill(c, alpha);
-//							flow_pg.noStroke();
-//							if(i == 0){
-//								e.setPath(drawSankey2(flow_pg, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _node_w, _half_node_w));
-//							}else if( i == dimensions.length-2){
-//								e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _node_w));
-//							}else{
-//								e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _half_node_w));
-//							}
-//						}
-//					}
-//				}
-//				flow_pg.endDraw();
-//				//embedding
-//				display_pg = createGraphics(_SANKEY_RECT.width, _SANKEY_RECT.height);
-//				display_pg.beginDraw();
-//				display_pg.image(flow_pg, -1*_SANKEY_RECT.x-_SANKEY_POS, -1* _SANKEY_RECT.y);
-//				display_pg.endDraw();
-//			}
-//
-//			private void updatePGraphics(){
-//				display_pg.clear();
-//				display_pg.beginDraw();
-//				display_pg.image(flow_pg, -1*_SANKEY_RECT.x-_SANKEY_POS ,-1* _SANKEY_RECT.y);
-//				display_pg.endDraw();
-//			}
-//
-//			//drawign pdf
-//			private void drawPDF(PGraphics pdf, int c, int alpha){
-//				pdf.fill(c);
-//				pdf.noStroke();
-//				for(int i = 0; i< dimensions.length-1; i++){
-//					Position d = dimensions[i];
-//					//draw edges
-//					for(Edge e :d.getEdges()){
-//						// println((i+1)+"-"+(i+2)+":"+e.toString());
-//						if(e.getSequences().size() > 0 && e.getFrequency() >= _frequencyThreshold){
-//							pdf.fill(c, alpha);
-//							pdf.noStroke();
-//							if(i == 0){
-//								e.setPath(drawSankey2(pdf, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _node_w, _half_node_w));	
-//							}else if( i == dimensions.length-2){
-//								e.setPath(drawSankey2(pdf, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _node_w));
-//							}else{
-//								e.setPath(drawSankey2(pdf, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _half_node_w));
-//							}
-//						}
-//					}
-//				}
-//			}
-//
-//
-//			//sankey
-//			private GeneralPath drawSankey2(PGraphics pg, float x_f, float y_from, float x_t, float y_to, float min_r_left, float min_r_right, float thickness, float from_offset, float to_offset){
-//				GeneralPath trace = new GeneralPath();
-//				float x_from = x_f + from_offset;
-//				float x_to = x_t - to_offset;
-//
-//				int isDownSlope = 0; //1 = down slope, 2 = up slope
-//				if (y_from < y_to){
-//					isDownSlope = 1;
-//				}else if(y_from > y_to){
-//					isDownSlope = -1;
-//				}else{
-//					//flat line
-//					isDownSlope = -1;
-//				}
-//				float f1 = min_r_left + thickness / 2 + isDownSlope * (thickness / 2);
-//				float f2 = min_r_left + thickness / 2 - isDownSlope * (thickness / 2);
-//				float f3 = min_r_right + thickness / 2 - isDownSlope * (thickness / 2);
-//				float f4 = min_r_right + thickness / 2 + isDownSlope * (thickness / 2);
-//
-//				float p1 = x_from;
-//				float q1 = y_from + thickness / 2 + isDownSlope * thickness / 2 + isDownSlope * min_r_left;
-//				float p2 = x_to;
-//				float q2 = y_to + thickness / 2 - isDownSlope * thickness / 2 - isDownSlope * min_r_right;
-//				// indentation
-//				// int i1 = x_from + thickness / 5;
-//				// int i2 = y_from + thickness / 2;
-//				// int i3 = x_to + thickness / 5;
-//				// int i4 = y_to + thickness / 2;
-//
-//				float f5 = sq(p2 - p1) + sq(q2 - q1);
-//
-//				float f6 = sqrt(f5 - sq(f3 + f1));
-//				float f7 = ((q2 - q1) * f6 + isDownSlope * (p2 - p1) * (f3 + f1)) / f5;
-//				float f8 = ((p2 - p1) * f6 - isDownSlope * (q2 - q1) * (f3 + f1)) / f5;
-//				float rx1 = (p1 + isDownSlope * f1 * f7);
-//				float ry1 = (q1 - isDownSlope * f1 * f8);
-//				float rx2 = (p2 - isDownSlope * f3 * f7);
-//				float ry2 = (q2 + isDownSlope * f3 * f8);
-//
-//				float f9 = sqrt(f5 - sq(f2 + f4));
-//				float f10 = ((q2 - q1) * f9 + isDownSlope * (p2 - p1) * (f2 + f4)) / f5;
-//				float f11 = ((p2 - p1) * f9 - isDownSlope * (q2 - q1) * (f2 + f4)) / f5;
-//
-//				float rx3 = (p1 + isDownSlope * f2 * f10);
-//				float ry3 = (q1 - isDownSlope * f2 * f11);
-//				float rx4 = (p2 - isDownSlope * f4 * f10);
-//				float ry4 = (q2 + isDownSlope * f4 * f11);
-//
-//				float angle = (2.0F * (atan2(ry1 - y_from, rx1 - x_from) % TWO_PI));
-//				// pg.fill(0);
-//				// pg.noStroke();
-//				pg.smooth();
-//				pg.beginShape();
-//
-//				float f12;
-//				if (isDownSlope == 1) {
-//					pg.vertex(x_f, y_from);
-//					pg.vertex(x_from, y_from);
-//					trace.moveTo(x_f, y_from);
-//					trace.lineTo(x_from, y_from);
-//					for (f12 = 0.0F; f12 < angle; f12 += 0.02F) {
-//						float dx = p1 + f1 * cos(f12 - isDownSlope * PI / 2.0F);
-//						float dy = q1 + f1 * sin(f12 - isDownSlope * PI / 2.0F);
-//						pg.curveVertex(dx, dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					pg.vertex(rx1, ry1);
-//					pg.vertex(rx2, ry2);
-//					trace.lineTo(rx1, ry1);
-//					trace.lineTo(rx2, ry2);
-//					for (f12 = angle; f12 > 0.0F; f12 -= isDownSlope * 0.02F) {
-//						float dx = p2 + f3 * cos(f12 + isDownSlope * PI / 2.0F);
-//						float dy = q2 + f3 * sin(f12 + isDownSlope * PI / 2.0F);
-//						pg.curveVertex(dx, dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					pg.vertex(x_to, y_to);
-//					pg.vertex(x_t, y_to);
-//					pg.vertex(x_t, y_to+thickness);	
-//					pg.vertex(x_to, y_to + thickness);
-//
-//					trace.lineTo(x_to, y_to);
-//					trace.lineTo(x_t, y_to);
-//					trace.lineTo(x_t, y_to+thickness);
-//					trace.lineTo(x_to, y_to +thickness);
-//					// pg.vertex(i3, i4);
-//
-//					for (f12 = 0.0F; f12 < angle; f12 += isDownSlope * 0.02F) {
-//						float dx = p2 + f4 * cos(f12 + isDownSlope * PI / 2.0F);
-//						float dy = q2 + f4 * sin(f12 + isDownSlope * PI / 2.0F);
-//						pg.curveVertex(dx, dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					pg.vertex(rx4, ry4);
-//					pg.vertex(rx3, ry3);
-//					for (f12 = angle; f12 > 0.0F; f12 -= isDownSlope * 0.02F) {
-//						float dx = p1 + f2 * cos(f12 - isDownSlope * PI / 2.0F);
-//						float dy = q1 + f2 * sin(f12 - isDownSlope * PI / 2.0F);
-//						pg.curveVertex(dx, dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					// pg.vertex(i1, i2);
-//					pg.vertex(x_from, y_from+thickness);
-//					pg.vertex(x_f, y_from+thickness);
-//					trace.lineTo(x_from, y_from+thickness);
-//					trace.lineTo(x_f, y_from+thickness);
-//
-//					pg.endShape();
-//					trace.closePath();
-//				}else {
-//					pg.vertex(x_f, y_from);
-//					pg.vertex(x_from, y_from);
-//					trace.moveTo(x_f, y_from);
-//					trace.lineTo(x_from, y_from);
-//					for (f12 = PI; f12 > PI + angle; f12 -= 0.02F) {
-//						float dx = p1 + f1 * cos(f12 - HALF_PI);
-//						float dy = q1 + f1 * sin(f12 - HALF_PI);
-//						pg.curveVertex(dx , dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					pg.vertex(rx1, ry1);
-//					pg.vertex(rx2, ry2);
-//					for (f12 = angle; f12 < 0.0F; f12 += 0.02F) {
-//						float dx = p2 + f3 * cos(f12 - HALF_PI);
-//						float dy = q2 + f3 * sin(f12 - HALF_PI);
-//						pg.curveVertex(dx, dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					pg.vertex(x_to, y_to);
-//					pg.vertex(x_t, y_to);
-//					// pg.vertex(i3, i4);
-//					pg.vertex(x_t, y_to + thickness);
-//					pg.vertex(x_to, y_to + thickness);
-//
-//					trace.lineTo(x_to, y_to);
-//					trace.lineTo(x_t, y_to);
-//					trace.lineTo(x_t, y_to + thickness);
-//					trace.lineTo(x_to, y_to + thickness);
-//					for (f12 = 0.0F; f12 > angle; f12 -= 0.02F) {
-//						float dx = p2 + f4 * cos(f12 - HALF_PI);
-//						float dy = q2 + f4 * sin(f12 - HALF_PI);
-//						pg.curveVertex(dx, dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					pg.vertex(rx4, ry4);
-//					pg.vertex(rx3, ry3);
-//					trace.lineTo(rx4, ry4);
-//					trace.lineTo(rx3, ry3);
-//					for (f12 = PI + angle; f12 < PI; f12 += 0.02F) {
-//						float dx = p1 + f2 * cos(f12 - HALF_PI);
-//						float dy = q1 + f2 * sin(f12 - HALF_PI);
-//						pg.curveVertex(dx,dy);
-//						trace.lineTo(dx, dy);
-//					}
-//					// pg.vertex(i1, i2);
-//					pg.vertex(x_from, y_from+thickness);
-//					pg.vertex(x_f, y_from+thickness);
-//
-//					trace.lineTo(x_from, y_from+thickness);
-//					trace.lineTo(x_f, y_from+thickness);
-//					pg.endShape();
-//					trace.closePath();
-//				}
-//				return trace;
-//			}
-//
-//
-//			private void drawSelectedSequence(ArrayList<Sequence> seq, int c){
-//				noStroke();
-//				fill(c);
-//				for(int i = 0; i< dimensions.length-1; i++){
-//					Position d = dimensions[i];
-//					//draw edges
-//					for(Edge e :d.getEdges()){
-//						if(e.getTo_dx() < _SANKEY_RECT.x+_SANKEY_RECT.width){
-//							//check overlap with seq
-//							ArrayList<Sequence> intersection = intersection(seq, e.getSequences());
-//							if(intersection.size()>0){
-//								float thickness = map(intersection.size(), 0, (float)total_count, 0f, _node_h);
-//								// if(isExponentialScaling){
-//								// 	thickness = log_map(intersection.size(), 0, (float)total_count, 0f, _node_h, base);
-//								// }
-//
-//								if(i == 0){
-//									drawSankey2(g, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, thickness, _node_w, _half_node_w);	
-//								}else if( i == dimensions.length-2){
-//									drawSankey2(g, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, thickness, _half_node_w, _node_w);	
-//								}else{
-//									drawSankey2(g, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, thickness, _half_node_w, _half_node_w);	
-//								}		
-//							}
-//						}
-//					}
-//				}
-//			}
-//
-//			private ArrayList<Sequence> intersection(ArrayList<Sequence> list1, ArrayList<Sequence> list2) {
-//				ArrayList<Sequence> list = new ArrayList<Sequence>();
-//				for (Sequence t : list1) {
-//					if(list2.contains(t)) {
-//						list.add(t);
-//					}
-//				}
-//				return list;
-//			}
-//
-//
-//
-//
-//
-//			//find the sequence based on most frequent residues
-//			private String getCommonSequence(){
-//				String result = "";
-//				for(Position d :dimensions){
-//					result += d.getMostFrequentResidue();
-//				}
-//				return result;
-//			}
-//
-//			private Rectangle getToggle() {
-//				return toggle;
-//			}
-//			
-//			private void setToggle(Rectangle toggle) {
-//				this.toggle = toggle;
-//			}
-//			
-//			private boolean isShowing() {
-//				return isShowing;
-//			}
-//			
-//			private void toggleShowing(){
-//				isShowing = !isShowing;
-//			}
-//			
-//			private String getName() {
-//				return name;
-//			}
-//			
-//			private boolean[] getPositionSelected() {
-//				return positionSelected;
-//			}
-//			
-//			private void setPositionSelected(boolean[] positionSelected) {
-//				this.positionSelected = positionSelected;
-//			}
-//			
-//			private void togglePositionSelected(int index){
-//				this.positionSelected[index] = !this.positionSelected[index];
-//			}
-//
-//			private int getSeq_length() {
-//				return seq_length;
-//			}
-//			
-//			private Position[] getDimensions() {
-//				return dimensions;
-//			}
-//		}
-
 	static public void main(String[] passedArgs) {
 		String[] appletArgs = new String[] { "view.SeDD" };
 		if (passedArgs != null) {
