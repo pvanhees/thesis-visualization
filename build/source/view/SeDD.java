@@ -9,12 +9,13 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import model.AA_Group;
 import model.Edge;
 import model.Position;
-import model.SequencingSample;
 import model.Sequence;
+import model.SequencingSample;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PGraphics;
@@ -109,6 +110,10 @@ public class SeDD extends PApplet {
 	private boolean _FILE_LOADING = false;
 	private boolean _FILE_LOADED = false;
 
+	
+	private Map<GraphModel, PGraphics> flow_pg_map = new HashMap<>();
+	private Map<GraphModel, PGraphics> display_pg_map = new HashMap<>();
+	private Map<GraphModel, Rectangle> toggle_map = new HashMap<>();
 
 	//6 group classification
 //	private float areaToDiameter(float area){
@@ -208,7 +213,7 @@ public class SeDD extends PApplet {
 				int index = getDimensionIndex(mouseX);
 				if(index != -1){
 					for(int i = 0; i < samples.length; i++){
-						SeDDModel s = samples[i];
+						GraphModel s = samples[i];
 						if(s.isShowing()){
 							Position d = s.getDimensions()[index]; 
 							//search for the edge
@@ -287,8 +292,8 @@ public class SeDD extends PApplet {
 			}else if(_LEGEND_RECT.contains(mouseX, mouseY)){
 				// println("legend_rect!!");
 				//legend area
-				for(SeDDModel s:samples){
-					if(s.getToggle().contains(mouseX, mouseY)){
+				for(GraphModel s:samples){
+					if(toggle_map.get(s).contains(mouseX, mouseY)){
 						cursor(HAND);
 						draw_counter = 0;
 						loop();
@@ -399,15 +404,15 @@ public class SeDD extends PApplet {
 				loop();
 			}else if(hover_sample_index != -1){
 				//selecting sample and position
-				SeDDModel s = samples[hover_sample_index];
+				GraphModel s = samples[hover_sample_index];
 				s.togglePositionSelected(hover_pos_index);
 				loop();
 				return;
 			}else if(_LEGEND_RECT.contains(mouseX, mouseY)){
 				//legend area
 				//toggle button
-				for(SeDDModel s:samples){
-					if(s.getToggle().contains(mouseX, mouseY)){
+				for(GraphModel s:samples){
+					if(toggle_map.get(s).contains(mouseX, mouseY)){
 						draw_counter = 0;
 						loop();
 						return;
@@ -520,7 +525,7 @@ public class SeDD extends PApplet {
 				//update position
 				_SANKEY_POS = round(map(tip_x, _SANKEY_SLIDER_RECT.x, _SANKEY_SLIDER_RECT.x+_SANKEY_SLIDER_RECT.width- _SANKEY_SLIDER_BAR.width, 0, _SANKEY_WIDTH - _SANKEY_RECT.width));
 				// println("dragging: "+_SANKEY_POS);
-				for(SeDDModel s:samples){
+				for(GraphModel s:samples){
 					updatePGraphics(s);
 				}
 				draw_counter = 0;
@@ -903,7 +908,7 @@ private boolean check_conf_file(File f){
 
 
 	// do one sample at a time
-	private SeDDModel[] samples;
+	private GraphModel[] samples;
 	private int _total_length;
 	private int _total_variation;
 
@@ -925,12 +930,12 @@ private boolean check_conf_file(File f){
 
 
 	private void loadData(){
-		samples = new SeDDModel[sample_names.length];
+		samples = new GraphModel[sample_names.length];
 		// samples = new Sample[2];
 		//load data
 		for(int i = 0; i<samples.length; i++){
 			status_msg = "loading "+sample_names[i]+" aligned sequences";
-			samples[i] = new SeDDModel(new SequencingSample(file_urls[i], sample_names[i], this));
+			samples[i] = new GraphModel(new SequencingSample(file_urls[i], sample_names[i], this));
 		}
 		// samples[0] = new Sample("panel-a.txt", "all");
 		// samples[0] = new Sample("panel-b.txt", "gram_negative");
@@ -948,7 +953,7 @@ private boolean check_conf_file(File f){
 	private void preprocessData(){
 		aminoAcidMap = setupAminoAcidMap();
 
-		for(SeDDModel s: samples){
+		for(GraphModel s: samples){
 			// println("\tpreprcessData():"+s.name);
 			status_msg = "preprocessing: calculating frequency for "+s.getSequencingSample().getName();
 			s.calculateFrequency();
@@ -1164,8 +1169,8 @@ private boolean check_conf_file(File f){
 		runningY+= _MARGIN;
 		//sample toggle
 		for(int i = 0; i < samples.length; i++){
-			SeDDModel s = samples[i];	
-			s.setToggle(new Rectangle(runningX, runningY, _legend_item_width, _node_h));
+			GraphModel s = samples[i];	
+			toggle_map.put(s, new Rectangle(runningX, runningY, _legend_item_width, _node_h));
 			runningY += _node_h+_MARGIN/2;
 		}	
 		//numberbox
@@ -1322,7 +1327,7 @@ private boolean check_conf_file(File f){
 	private void updateEdges(){
 		//persample
 		for(int i = 0; i < samples.length; i++){
-			SeDDModel sample = samples[i];
+			GraphModel sample = samples[i];
 			status_msg = "updating the plot for "+sample.getSequencingSample().getName();
 			//assgin edge position
 			sample.assignEdgePositions(layout_y_map, layout_x, _half_node_w, _node_h, isExponentialScaling, base);
@@ -1336,36 +1341,38 @@ private boolean check_conf_file(File f){
 
 
 	//draw edges
-	private void createPGraphics(SeDDModel s, int c, int alpha){
-		s.setFlow_pg(createGraphics(_SANKEY_RECT.x+_SANKEY_WIDTH, _SANKEY_RECT.y+_SANKEY_HEIGHT));
-		s.getFlow_pg().beginDraw();
+	private void createPGraphics(GraphModel s, int c, int alpha){
+		PGraphics flow_pg = createGraphics(_SANKEY_RECT.x+_SANKEY_WIDTH, _SANKEY_RECT.y+_SANKEY_HEIGHT);
+		flow_pg_map.put(s, flow_pg);
+		flow_pg.beginDraw();
 		// flow_pg.background(255);
-		s.getFlow_pg().fill(c);
-		s.getFlow_pg().noStroke();
+		flow_pg.fill(c);
+		flow_pg.noStroke();
 		for(int i = 0; i< s.getDimensions().length-1; i++){
 			Position d = s.getDimensions()[i];
 			//draw edges
 			for(Edge e :d.getEdges()){
 				// println((i+1)+"-"+(i+2)+":"+e.toString());
 				if(e.getSequences().size() > 0 && e.getFrequency() >= _frequencyThreshold){
-					s.getFlow_pg().fill(c, alpha);
-					s.getFlow_pg().noStroke();
+					flow_pg.fill(c, alpha);
+					flow_pg.noStroke();
 					if(i == 0){
-						e.setPath(drawSankey2(s.getFlow_pg(), e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _node_w, _half_node_w));
+						e.setPath(drawSankey2(flow_pg, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _node_w, _half_node_w));
 					}else if( i == s.getDimensions().length-2){
-						e.setPath(drawSankey2(s.getFlow_pg(), e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _node_w));
+						e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _node_w));
 					}else{
-						e.setPath(drawSankey2(s.getFlow_pg(), e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _half_node_w));
+						e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _half_node_w));
 					}
 				}
 			}
 		}
-		s.getFlow_pg().endDraw();
+		flow_pg.endDraw();
 		//embedding
-		s.setDisplay_pg(createGraphics(_SANKEY_RECT.width, _SANKEY_RECT.height));
-		s.getDisplay_pg().beginDraw();
-		s.getDisplay_pg().image(s.getFlow_pg(), -1*_SANKEY_RECT.x-_SANKEY_POS, -1* _SANKEY_RECT.y);
-		s.getDisplay_pg().endDraw();
+		PGraphics display_pg = createGraphics(_SANKEY_RECT.width, _SANKEY_RECT.height);
+		display_pg_map.put(s, display_pg);
+		display_pg.beginDraw();
+		display_pg.image(flow_pg, -1*_SANKEY_RECT.x-_SANKEY_POS, -1* _SANKEY_RECT.y);
+		display_pg.endDraw();
 	}
 
 	//sankey slider
@@ -1459,12 +1466,12 @@ private boolean check_conf_file(File f){
 				// draw image twice
 				for(int i = 0; i<samples.length; i++){
 					if(samples[i].isShowing()){
-						image(samples[i].getDisplay_pg(), _SANKEY_RECT.x, _SANKEY_RECT.y);
+						image(display_pg_map.get(samples[i]), _SANKEY_RECT.x, _SANKEY_RECT.y);
 					}
 				}
 				for(int i = 0; i<samples.length; i++){
 					if(samples[i].isShowing()){
-						image(samples[i].getDisplay_pg(), _SANKEY_RECT.x, _SANKEY_RECT.y);
+						image(display_pg_map.get(samples[i]), _SANKEY_RECT.x, _SANKEY_RECT.y);
 					}
 				}
 			}
@@ -1489,7 +1496,7 @@ private boolean check_conf_file(File f){
 	
 	
 
-	private void drawSelectedSequence(SeDDModel sample, ArrayList<Sequence> seq, int c){
+	private void drawSelectedSequence(GraphModel sample, ArrayList<Sequence> seq, int c){
 		noStroke();
 		fill(c);
 		for(int i = 0; i< sample.getDimensions().length-1; i++){
@@ -1694,11 +1701,12 @@ private boolean check_conf_file(File f){
 		return trace;
 	}
 	
-	private void updatePGraphics(SeDDModel s){
-		s.getDisplay_pg().clear();
-		s.getDisplay_pg().beginDraw();
-		s.getDisplay_pg().image(s.getFlow_pg(), -1*_SANKEY_RECT.x-_SANKEY_POS ,-1* _SANKEY_RECT.y);
-		s.getDisplay_pg().endDraw();
+	private void updatePGraphics(GraphModel s){
+		PGraphics display_pg = display_pg_map.get(s);
+		display_pg.clear();
+		display_pg.beginDraw();
+		display_pg.image(flow_pg_map.get(s), -1*_SANKEY_RECT.x-_SANKEY_POS ,-1* _SANKEY_RECT.y);
+		display_pg.endDraw();
 	}
 
 	//pdf drawing
@@ -1755,13 +1763,13 @@ private boolean check_conf_file(File f){
 		for(int i = 0; i<samples.length; i++){
 			if(samples[i].isShowing()){
 				// samples[i].drawPDF(pdf, sample_colors[i], 200);
-				pdf.image(samples[i].getFlow_pg(), 0, 0);
+				pdf.image(flow_pg_map.get(samples[i]), 0, 0);
 			}
 		}
 		for(int i = 0; i<samples.length; i++){
 			if(samples[i].isShowing()){
 				// samples[i].drawPDF(pdf, sample_colors[i], 200);
-				pdf.image(samples[i].getFlow_pg(), 0, 0);
+				pdf.image(flow_pg_map.get(samples[i]), 0, 0);
 			}
 		}
 
@@ -1781,8 +1789,8 @@ private boolean check_conf_file(File f){
 		}
 
 		for(int i = 0; i < samples.length; i++){
-			SeDDModel s = samples[i];
-			Rectangle rect = s.getToggle();
+			GraphModel s = samples[i];
+			Rectangle rect = toggle_map.get(s);
 			pdf.rectMode(CORNER);
 			if(s.isShowing()){
 				pdf.fill(sample_colors[i]);
@@ -1825,7 +1833,7 @@ private boolean check_conf_file(File f){
 				int selection_bar_weight = 3;
 				int selection_bar_gap = 1;
 				for(int j = samples.length-1; j >= 0; j--){
-					SeDDModel s = samples[j];
+					GraphModel s = samples[j];
 					if(s.getPositionSelected()[i]){
 						int selection_bar_y = round(_SANKEY_RECT.y - _MARGIN*1.5f - (samples.length-j)*(selection_bar_weight+selection_bar_gap));
 						stroke(sample_colors[j]);
@@ -1948,8 +1956,8 @@ private boolean check_conf_file(File f){
 		}
 
 		for(int i = 0; i < samples.length; i++){
-			SeDDModel s = samples[i];
-			Rectangle rect = s.getToggle();
+			GraphModel s = samples[i];
+			Rectangle rect = toggle_map.get(s);
 			rectMode(CORNER);
 			if(s.isShowing()){
 				fill(sample_colors[i]);
