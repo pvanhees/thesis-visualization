@@ -227,6 +227,7 @@ public class SeDD extends PApplet {
 								println("debug: "+s.getName()+":"+selected_edge.getSequenceAmount()+" sequences selected");						
 								sequences_selected  = true;
 							}
+							else selected_edges.add(null);
 						}
 					}
 
@@ -1465,9 +1466,11 @@ private boolean check_conf_file(File f){
 			if(sequences_selected){
 				for(int i = 0; i < selected_edges.size(); i++){
 					Edge e = selected_edges.get(i);
-					//draw sequences
-					//						samples[i].drawSelectedSequence(seq, sample_colors[i]);
-					drawSelectedSequence(samples[i], e, sample_colors[i]);
+					if(e != null){
+						//draw sequences
+						//						samples[i].drawSelectedSequence(seq, sample_colors[i]);
+						drawSelectedSequence(samples[i], e, sample_colors[i]);
+					}
 				}
 			}else{
 				// draw image twice
@@ -1504,8 +1507,6 @@ private boolean check_conf_file(File f){
 	private void drawSelectedSequence(GraphModel sample, Edge selectedEdge, int c){
 		noStroke();
 		fill(c);
-		ArrayList<Sequence> seq = selectedEdge.getSequences();
-//		System.out.println(seq + "    " + seq.size());
 		//TODO smaller than length -1 bug or feature?
 		for(int i = 0; i< sample.getDimensions().length-1; i++){
 			Position d = sample.getDimensions()[i];
@@ -1513,13 +1514,7 @@ private boolean check_conf_file(File f){
 			for(Edge e :d.getEdges()){
 				if(e.getTo_dx() < _SANKEY_RECT.x+_SANKEY_RECT.width){
 					//check overlap with seq
-					ArrayList<Sequence> intersection = intersection(seq, e.getSequences());
 					int intersectionAmount = selectedEdge.getIntersectionAmount(e);
-					System.out.println(selectedEdge.getSequences());
-					System.out.println(e.getSequences());
-					System.out.println("----------------------------------------------");
-//					System.out.println("------------ " + intersection.size() + " and " + intersectionAmount);
-//					System.out.println("sequence amount: " + selectedEdge.getSequences().size());
 					if(intersectionAmount>0){
 						float thickness = map(intersectionAmount, 0, (float) sample.getTotalCount(), 0f, _node_h);
 						// if(isExponentialScaling){
@@ -1538,18 +1533,6 @@ private boolean check_conf_file(File f){
 			}
 		}
 	}
-	
-	private ArrayList<Sequence> intersection(ArrayList<Sequence> list1, ArrayList<Sequence> list2) {
-		ArrayList<Sequence> list = new ArrayList<Sequence>();
-		for (Sequence t : list1) {
-			if(list2.contains(t)) {
-				list.add(t);
-			}
-		}
-		return list;
-	}
-	
-
 	
 	private GeneralPath drawSankey2(PGraphics pg, float x_f, float y_from, float x_t, float y_to, float min_r_left, float min_r_right, float thickness, float from_offset, float to_offset){
 		GeneralPath trace = new GeneralPath();
