@@ -47,11 +47,34 @@ public class GraphModel {
 				edge.addSequence(s);
 			}
 		}
+	//TODO can be optimized	
+		for(Position d : dimensions){
+			for(int i = 0; i < d.getEdges().size(); i++){
+				Edge edge1 = d.getEdges().get(i);
+				for(Position d2 : dimensions){
+					for(int j = 0; j < d2.getEdges().size(); j++){
+						Edge edge2 = d2.getEdges().get(j);
+						int amount = intersection(edge1.getSequences(), edge2.getSequences()).size();
+						edge1.setIntersectionAmount(edge2, amount);
+					}
+				}
+			}
+		}
+	}
+	
+	private ArrayList<Sequence> intersection(ArrayList<Sequence> list1, ArrayList<Sequence> list2) {
+		ArrayList<Sequence> list = new ArrayList<Sequence>();
+		for (Sequence t : list1) {
+			if(list2.contains(t)) {
+				list.add(t);
+			}
+		}
+		return list;
 	}
 	
 	public Position[] calculateDimensions(){
-		Position[] dimensions = new Position[ss.getSeq_length()];
-		for(int i = 0; i<ss.getSeq_length(); i++){
+		Position[] dimensions = new Position[ss.getSeqLength()];
+		for(int i = 0; i<ss.getSeqLength(); i++){
 			Position d = new Position(i);
 			//nodes
 			for(int j = 0; j < ss.getSequences().size(); j++){
@@ -75,16 +98,15 @@ public class GraphModel {
 		//per node
 		for(Position d : dimensions){
 			for(Node n : d.getNodes()){
-				n.setFrequency((float)n.getSequences().size()/(float)ss.getTotal_count());
+				n.setFrequency((float)n.getSequences().size()/(float)ss.getTotalCount());
 			}
 			for(Edge e: d.getEdges()){
-				e.setFrequency((float)e.getSequences().size()/(float)ss.getTotal_count());
+				e.setFrequency((float)e.getSequences().size()/(float)ss.getTotalCount());
 			}
 		}
 	}
 	
 	//sort edges and assign positions
-	@SuppressWarnings("unchecked")
 	public void assignEdgePositions(HashMap<String, Float> layout_y_map, float[] layout_x, float half_node_w, int node_h, boolean isExponentialScaling, float base){
 		//assign y position for each node
 		System.out.println("assignEdgePositions():"+ss.getName());
@@ -130,7 +152,6 @@ public class GraphModel {
 				e.setFrom_dy(e.getFrom().getFrom_runningY());
 				e.setTo_dx(to_mid_x);
 				e.setTo_dy(e.getTo().getTo_runningY());
-				e.setThickness(thickness);
 				//increment
 				e.getFrom().setFrom_runningY(e.getFrom().getFrom_runningY() + thickness);
 				e.getTo().setTo_runningY(e.getTo().getTo_runningY() + thickness);
@@ -154,10 +175,6 @@ public class GraphModel {
 		return flog*(o_max - o_min);
 	}
 
-	public SequencingSample getSequencingSample() {
-		return ss;
-	}
-	
 	public boolean[] getPositionSelected() {
 		return positionSelected;
 	}
@@ -176,5 +193,17 @@ public class GraphModel {
 	
 	public boolean isShowing() {
 		return isShowing;
+	}
+	
+	public String getName(){
+		return ss.getName();
+	}
+	
+	public int getTotalCount(){
+		return ss.getTotalCount();
+	}
+	
+	public int getSeqLength(){
+		return ss.getSeqLength();
 	}
 }

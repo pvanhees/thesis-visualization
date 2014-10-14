@@ -1,17 +1,19 @@
 package model;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Edge implements Comparable{
+public class Edge implements Comparable<Edge>{
 		private ArrayList<Sequence> sequences;
 		private Node from;
 		private Node to;
 		private String aa_edge;
 		private float frequency;
+		private Map<Edge,Integer> intersectionAmount;
 
 
 		private float from_dx, from_dy, to_dx, to_dy;
-		private float thickness;
 
 		private GeneralPath path;
 
@@ -26,6 +28,7 @@ public class Edge implements Comparable{
 			this.to = to;
 			this.aa_edge  = aa_edge;
 			this.sequences = new ArrayList<Sequence>();
+			intersectionAmount = new HashMap<>();
 		}
 
 		public void addSequence(Sequence seq){
@@ -35,6 +38,23 @@ public class Edge implements Comparable{
 		public String toString(){
 			return from.getAminoAcid()+" - "+to.getAminoAcid()+" ("+getSequences().size()+") ("+from_dx+","+from_dy+") to ("+to_dx+","+to_dy +")";
 		}
+		
+//		@Override
+//		public int hashCode() {
+//			int hash = 1;
+//			hash = hash * 31 + sequences.hashCode();
+//			hash = hash * 31 + from.hashCode();
+//			hash = hash * 31 + to.hashCode();
+//			return hash;
+//		}
+//		
+//		@Override
+//		public boolean equals(Object obj) {
+//			if(obj == null) return false;
+//			if(!(obj instanceof Edge)) return false; 
+//			Edge e = (Edge) obj;
+//			return e.getFrom().equals(this.getFrom()) && e.getTo().equals(this.getTo()) && e.getSequences().equals(this.getSequences());
+//		}
 
 		// Edge(Node from, Node to, char type){
 		// 	this.from = from;
@@ -46,7 +66,8 @@ public class Edge implements Comparable{
 
 		//sort by the from_nodes
 		//sort by the gap
-		public int compareTo(Object obj) {
+		@Override
+		public int compareTo(Edge obj) {
 			Edge that = (Edge) obj;
 			float this_from_y = this.from.getDy();
 			float that_from_y = that.from.getDy();
@@ -135,11 +156,17 @@ public class Edge implements Comparable{
 			return to;
 		}
 		
-		public float getThickness() {
-			return thickness;
+		public int getSequenceAmount(){
+			return sequences.size();
 		}
 		
-		public void setThickness(float thickness) {
-			this.thickness = thickness;
+		public int getIntersectionAmount(Edge e) {
+			Integer i = intersectionAmount.get(e);
+			if(i == null) return 0;
+			else return i;
+		}
+		
+		public void setIntersectionAmount(Edge edge, int amount) {
+			intersectionAmount.put(edge, (Integer)amount);
 		}
 	}

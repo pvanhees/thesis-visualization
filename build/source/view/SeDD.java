@@ -164,6 +164,7 @@ public class SeDD extends PApplet {
 	}
 
 //	private float min_frequency  = 0.01f; //1%
+	private ArrayList<Edge> selected_edges = new ArrayList<Edge>();
 	private ArrayList<ArrayList<Sequence>> selected_sequences = new ArrayList<ArrayList<Sequence>>();
 
 	private boolean sequences_selected = false;
@@ -205,8 +206,9 @@ public class SeDD extends PApplet {
 			cursor(ARROW);
 			//selecting bundles
 			if(_SANKEY_RECT.contains(mouseX, mouseY)){
+				selected_edges = new ArrayList<Edge>();
 				selected_sequences = new ArrayList<ArrayList<Sequence>>();
-				for(int i = 0; i < samples.length; i++){
+				for(GraphModel s : samples){
 					selected_sequences.add(new ArrayList<Sequence>());
 				}
 
@@ -226,8 +228,9 @@ public class SeDD extends PApplet {
 									}
 								}
 							if(selected_edge != null){
+								selected_edges.add(selected_edge);
 								selected_sequences.get(i).addAll(selected_edge.getSequences());
-								println("debug: "+s.getSequencingSample().getName()+":"+selected_edge.getSequences().size()+" sequences selected");						
+								println("debug: "+s.getName()+":"+selected_edge.getSequenceAmount()+" sequences selected");						
 								sequences_selected  = true;
 							}
 						}
@@ -941,7 +944,7 @@ private boolean check_conf_file(File f){
 		// samples[0] = new Sample("panel-b.txt", "gram_negative");
 		// samples[1] = new Sample("panel-c.txt", "gram_positive");
 
-		_total_length = samples[0].getSequencingSample().getSeq_length();
+		_total_length = samples[0].getSeqLength();
 		_total_variation = all_aa_default.length;
 
 
@@ -955,7 +958,7 @@ private boolean check_conf_file(File f){
 
 		for(GraphModel s: samples){
 			// println("\tpreprcessData():"+s.name);
-			status_msg = "preprocessing: calculating frequency for "+s.getSequencingSample().getName();
+			status_msg = "preprocessing: calculating frequency for "+s.getName();
 			s.calculateFrequency();
 
 
@@ -1328,17 +1331,23 @@ private boolean check_conf_file(File f){
 		//persample
 		for(int i = 0; i < samples.length; i++){
 			GraphModel sample = samples[i];
-			status_msg = "updating the plot for "+sample.getSequencingSample().getName();
+			status_msg = "updating the plot for "+sample.getName();
 			//assgin edge position
 			sample.assignEdgePositions(layout_y_map, layout_x, _half_node_w, _node_h, isExponentialScaling, base);
 			// sample.createColorPG(color_cyan, 160);
 			createPGraphics(sample, sample_colors[i], color_alpha);
 
-			println("debug: end of updateEdges():"+sample.getSequencingSample().getName());
+			println("debug: end of updateEdges():"+sample.getName());
 		}
 		println("debug: end of updateEdges()");
 	}
 
+	
+	public float log_map(float input, float i_min, float i_max, float o_min, float o_max, float b){
+		float f = (input - i_min)/(i_max-i_min);
+		float flog = PApplet.pow(f, 1f/b);
+		return flog*(o_max - o_min);
+	}
 
 	//draw edges
 	private void createPGraphics(GraphModel s, int c, int alpha){
@@ -1353,15 +1362,21 @@ private boolean check_conf_file(File f){
 			//draw edges
 			for(Edge e :d.getEdges()){
 				// println((i+1)+"-"+(i+2)+":"+e.toString());
-				if(e.getSequences().size() > 0 && e.getFrequency() >= _frequencyThreshold){
+				if(e.getSequenceAmount() > 0 && e.getFrequency() >= _frequencyThreshold){
+					float thickness = map(e.getFrequency(), 0f, 1f, 0f, _node_h);
+
+					if(isExponentialScaling){
+						thickness = log_map(e.getFrequency(), 0f, 1f, 0f, _node_h, base);
+					}
+
 					flow_pg.fill(c, alpha);
 					flow_pg.noStroke();
 					if(i == 0){
-						e.setPath(drawSankey2(flow_pg, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _node_w, _half_node_w));
+						e.setPath(drawSankey2(flow_pg, e.getFrom_dx() - _half_node_w, e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, thickness, _node_w, _half_node_w));
 					}else if( i == s.getDimensions().length-2){
-						e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _node_w));
+						e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx() + _half_node_w, e.getTo_dy(), 0.5f, 0.5f, thickness, _half_node_w, _node_w));
 					}else{
-						e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, e.getThickness(), _half_node_w, _half_node_w));
+						e.setPath(drawSankey2(flow_pg, e.getFrom_dx(), e.getFrom_dy(), e.getTo_dx(), e.getTo_dy(), 0.5f, 0.5f, thickness, _half_node_w, _half_node_w));
 					}
 				}
 			}
@@ -1454,12 +1469,13 @@ private boolean check_conf_file(File f){
 			//draw buttons
 			drawBtns();
 			if(sequences_selected){
-				for(int i = 0; i < selected_sequences.size(); i++){
+				for(int i = 0; i < selected_edges.size(); i++){
+					Edge e = selected_edges.get(i);
 					ArrayList<Sequence> seq = selected_sequences.get(i);
-					if(seq.size() > 0){
+					if(e.getSequenceAmount() > 0){
 						//draw sequences
 //						samples[i].drawSelectedSequence(seq, sample_colors[i]);
-						drawSelectedSequence(samples[i], seq, sample_colors[i]);
+						drawSelectedSequence(samples[i], e, sample_colors[i],seq);
 					}
 				}
 			}else{
@@ -1493,10 +1509,8 @@ private boolean check_conf_file(File f){
 			// }
 		}
 	}
-	
-	
 
-	private void drawSelectedSequence(GraphModel sample, ArrayList<Sequence> seq, int c){
+	private void drawSelectedSequence(GraphModel sample, Edge selectedEdge, int c, ArrayList<Sequence> seq){
 		noStroke();
 		fill(c);
 		for(int i = 0; i< sample.getDimensions().length-1; i++){
@@ -1506,8 +1520,11 @@ private boolean check_conf_file(File f){
 				if(e.getTo_dx() < _SANKEY_RECT.x+_SANKEY_RECT.width){
 					//check overlap with seq
 					ArrayList<Sequence> intersection = intersection(seq, e.getSequences());
-					if(intersection.size()>0){
-						float thickness = map(intersection.size(), 0, (float) sample.getSequencingSample().getTotal_count(), 0f, _node_h);
+					int intersectionAmount = selectedEdge.getIntersectionAmount(e);
+					System.out.println("------------ " + intersection.size() + " and " + intersectionAmount);
+					System.out.println("sequence amount: " + selectedEdge.getSequences().size());
+					if(intersectionAmount>0){
+						float thickness = map(intersectionAmount, 0, (float) sample.getTotalCount(), 0f, _node_h);
 						// if(isExponentialScaling){
 						// 	thickness = log_map(intersection.size(), 0, (float)total_count, 0f, _node_h, base);
 						// }
@@ -1534,6 +1551,8 @@ private boolean check_conf_file(File f){
 		}
 		return list;
 	}
+	
+
 	
 	private GeneralPath drawSankey2(PGraphics pg, float x_f, float y_from, float x_t, float y_to, float min_r_left, float min_r_right, float thickness, float from_offset, float to_offset){
 		GeneralPath trace = new GeneralPath();
@@ -1802,7 +1821,7 @@ private boolean check_conf_file(File f){
 			}
 			pdf.rect(e_legend_x, rect.y, rect.width, rect.height);
 			pdf.fill(0);
-			pdf.text(s.getSequencingSample().getName(), e_legend_x+rect.width+_MARGIN/2, rect.y);
+			pdf.text(s.getName(), e_legend_x+rect.width+_MARGIN/2, rect.y);
 		}
 
 	}
@@ -1969,7 +1988,7 @@ private boolean check_conf_file(File f){
 			}
 			rect(rect.x, rect.y, rect.width, rect.height);
 			fill(0);
-			text(s.getSequencingSample().getName(), rect.x+rect.width+_MARGIN/2, rect.y);
+			text(s.getName(), rect.x+rect.width+_MARGIN/2, rect.y);
 		}
 
 		//number box

@@ -49,11 +49,11 @@ public class SequencingSample{
 		return name;
 	}
 
-	public int getSeq_length() {
+	public int getSeqLength() {
 		return seq_length;
 	}
 
-	public int getTotal_count() {
+	public int getTotalCount() {
 		return total_count;
 	}
 	

@@ -68,6 +68,22 @@ public class Node implements Comparable{
 			return 0;
 			// }
 		}
+		
+//		@Override
+//		public boolean equals(Object obj) {
+//			if(obj == null) return false;
+//			if(!(obj instanceof Node)) return false;
+//			Node n = (Node)obj;
+//			return n.getSequences().equals(this.getSequences()) && this.getAminoAcid() == n.getAminoAcid();
+//		}
+//		
+//		@Override
+//		public int hashCode() {
+//			int hash = 1;
+//			hash = hash * 31 + sequences.hashCode();
+//			hash = hash * 31 + (int)aminoAcid;
+//			return hash;
+//		}
 
 		public char getAminoAcid() {
 			return aminoAcid;
