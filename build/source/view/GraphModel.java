@@ -54,7 +54,7 @@ public class GraphModel {
 				for(Position d2 : dimensions){
 					for(int j = 0; j < d2.getEdges().size(); j++){
 						Edge edge2 = d2.getEdges().get(j);
-						int amount = intersection(edge1.getSequences(), edge2.getSequences()).size();
+						int amount = intersection(edge1.getSequences(), edge2.getSequences());
 						edge1.setIntersectionAmount(edge2, amount);
 					}
 				}
@@ -62,14 +62,14 @@ public class GraphModel {
 		}
 	}
 	
-	private ArrayList<Sequence> intersection(ArrayList<Sequence> list1, ArrayList<Sequence> list2) {
-		ArrayList<Sequence> list = new ArrayList<Sequence>();
+	private int intersection(ArrayList<Sequence> list1, ArrayList<Sequence> list2) {
+		int count = 0;
 		for (Sequence t : list1) {
 			if(list2.contains(t)) {
-				list.add(t);
+				count++;
 			}
 		}
-		return list;
+		return count;
 	}
 	
 	public Position[] calculateDimensions(){

@@ -165,7 +165,6 @@ public class SeDD extends PApplet {
 
 //	private float min_frequency  = 0.01f; //1%
 	private ArrayList<Edge> selected_edges = new ArrayList<Edge>();
-	private ArrayList<ArrayList<Sequence>> selected_sequences = new ArrayList<ArrayList<Sequence>>();
 
 	private boolean sequences_selected = false;
 
@@ -207,14 +206,10 @@ public class SeDD extends PApplet {
 			//selecting bundles
 			if(_SANKEY_RECT.contains(mouseX, mouseY)){
 				selected_edges = new ArrayList<Edge>();
-				selected_sequences = new ArrayList<ArrayList<Sequence>>();
-				for(GraphModel s : samples){
-					selected_sequences.add(new ArrayList<Sequence>());
-				}
-
 				int index = getDimensionIndex(mouseX);
 				if(index != -1){
-					for(int i = 0; i < samples.length; i++){
+					for(int i = 0; i < samples.length; i++){				
+
 						GraphModel s = samples[i];
 						if(s.isShowing()){
 							Position d = s.getDimensions()[index]; 
@@ -229,7 +224,6 @@ public class SeDD extends PApplet {
 								}
 							if(selected_edge != null){
 								selected_edges.add(selected_edge);
-								selected_sequences.get(i).addAll(selected_edge.getSequences());
 								println("debug: "+s.getName()+":"+selected_edge.getSequenceAmount()+" sequences selected");						
 								sequences_selected  = true;
 							}
@@ -1471,12 +1465,9 @@ private boolean check_conf_file(File f){
 			if(sequences_selected){
 				for(int i = 0; i < selected_edges.size(); i++){
 					Edge e = selected_edges.get(i);
-					ArrayList<Sequence> seq = selected_sequences.get(i);
-					if(e.getSequenceAmount() > 0){
-						//draw sequences
-//						samples[i].drawSelectedSequence(seq, sample_colors[i]);
-						drawSelectedSequence(samples[i], e, sample_colors[i],seq);
-					}
+					//draw sequences
+					//						samples[i].drawSelectedSequence(seq, sample_colors[i]);
+					drawSelectedSequence(samples[i], e, sample_colors[i]);
 				}
 			}else{
 				// draw image twice
@@ -1510,9 +1501,12 @@ private boolean check_conf_file(File f){
 		}
 	}
 
-	private void drawSelectedSequence(GraphModel sample, Edge selectedEdge, int c, ArrayList<Sequence> seq){
+	private void drawSelectedSequence(GraphModel sample, Edge selectedEdge, int c){
 		noStroke();
 		fill(c);
+		ArrayList<Sequence> seq = selectedEdge.getSequences();
+//		System.out.println(seq + "    " + seq.size());
+		//TODO smaller than length -1 bug or feature?
 		for(int i = 0; i< sample.getDimensions().length-1; i++){
 			Position d = sample.getDimensions()[i];
 			//draw edges
@@ -1521,8 +1515,11 @@ private boolean check_conf_file(File f){
 					//check overlap with seq
 					ArrayList<Sequence> intersection = intersection(seq, e.getSequences());
 					int intersectionAmount = selectedEdge.getIntersectionAmount(e);
-					System.out.println("------------ " + intersection.size() + " and " + intersectionAmount);
-					System.out.println("sequence amount: " + selectedEdge.getSequences().size());
+					System.out.println(selectedEdge.getSequences());
+					System.out.println(e.getSequences());
+					System.out.println("----------------------------------------------");
+//					System.out.println("------------ " + intersection.size() + " and " + intersectionAmount);
+//					System.out.println("sequence amount: " + selectedEdge.getSequences().size());
 					if(intersectionAmount>0){
 						float thickness = map(intersectionAmount, 0, (float) sample.getTotalCount(), 0f, _node_h);
 						// if(isExponentialScaling){

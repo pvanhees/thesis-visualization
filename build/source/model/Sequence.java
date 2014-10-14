@@ -17,11 +17,17 @@ public class Sequence{
 			return id;
 		}
 		
+		@Override
+		public String toString() {
+			String sequence2 = new String(sequence);
+			return sequence2;
+		}
+		
 		//TODO check if this is correct with Ryo
-//		@Override
-//		public boolean equals(Object obj) {
-//			return this.id.equals(((Sequence)obj).getId()) && this.sequence.equals(((Sequence)obj).getSequence());
-//		}
+		@Override
+		public boolean equals(Object obj) {
+			return this.id.equals(((Sequence)obj).getId()) && this.sequence.equals(((Sequence)obj).getSequence());
+		}
 		
 //		@Override
 //		public int hashCode() {
